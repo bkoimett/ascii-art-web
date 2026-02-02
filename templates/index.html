@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Generator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ASCII Art Generator</h1>
+            <p class="subtitle">Convert your text to ASCII art</p>
+        </header>
+
+        <main>
+            <form action="/ascii-art" method="POST" id="ascii-form">
+                <div class="form-group">
+                    <label for="text">Enter your text:</label>
+                    <textarea 
+                        id="text" 
+                        name="text" 
+                        rows="4" 
+                        placeholder="Type your text here..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Select banner style:</label>
+                    <div class="banner-options">
+                        <label class="radio-option">
+                            <input type="radio" name="banner" value="standard" checked>
+                            <span class="radio-label">Standard</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="banner" value="shadow">
+                            <span class="radio-label">Shadow</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="banner" value="thinkertoy">
+                            <span class="radio-label">Thinkertoy</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn-generate">Generate ASCII Art</button>
+                </div>
+            </form>
+
+            <div class="instructions">
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Enter text in the textarea above</li>
+                    <li>Select a banner style</li>
+                    <li>Click "Generate ASCII Art"</li>
+                    <li>Only printable ASCII characters (32-126) are allowed</li>
+                    <li>New lines (\n) are supported</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <p>ASCII Art Web - Group Project</p>
+        </footer>
+    </div>
+</body>
+</html>

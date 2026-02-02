@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Result</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ASCII Art Result</h1>
+            <a href="/" class="back-link">← Back to Generator</a>
+        </header>
+
+        <main>
+            <div class="result-info">
+                <p><strong>Original Text:</strong> {{.Input}}</p>
+                <p><strong>Banner Style:</strong> {{.Banner}}</p>
+            </div>
+
+            <div class="ascii-output">
+                <h3>Generated ASCII Art:</h3>
+                <pre>{{.AsciiArt}}</pre>
+            </div>
+
+            <div class="actions">
+                <button onclick="copyToClipboard()" class="btn-copy">Copy to Clipboard</button>
+                <a href="/" class="btn-new">Create New</a>
+            </div>
+        </main>
+
+        <footer>
+            <p>ASCII Art Web - Group Project</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const asciiArt = document.querySelector('pre').textContent;
+            navigator.clipboard.writeText(asciiArt).then(() => {
+                alert('ASCII art copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
