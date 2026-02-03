@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	// "bytes"
+	"fmt"
 	"test/asciiart"
 	"html/template"
 	"net/http"
@@ -30,6 +32,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
 func AsciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -41,52 +44,77 @@ func AsciiArtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse form data
 	err := r.ParseForm()
 	if err != nil {
 		errorHandler(w, r, http.StatusBadRequest)
 		return
 	}
 
-	// Get input values
 	text := r.FormValue("text")
 	banner := r.FormValue("banner")
 
-	// Validate input
-	if text == "" || banner == "" {
+	fmt.Printf("Received text: %q\n", text)
+	fmt.Printf("Text length: %d\n", len(text))
+
+	if text == "" {
+		tmpl, err := template.ParseFiles("templates/result.html")
+		if err != nil {
+			errorHandler(w, r, http.StatusInternalServerError)
+			return
+		}
+		
+		data := struct {
+			Input    string
+			Banner   string
+			AsciiArt string
+		}{
+			Input:    text,
+			Banner:   banner,
+			AsciiArt: "",
+		}
+		
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			errorHandler(w, r, http.StatusInternalServerError)
+		}
+		return
+	}
+
+	if banner == "" {
 		errorHandler(w, r, http.StatusBadRequest)
 		return
 	}
 
-	// Check if text contains only printable ASCII characters (32-126)
-	for _, char := range text {
+	for i, char := range text {
 		if char < 32 || char > 126 {
 			if char != '\n' && char != '\r' {
+				fmt.Printf("Invalid character at position %d: %q (code: %d)\n", i, char, char)
 				errorHandler(w, r, http.StatusBadRequest)
 				return
 			}
 		}
 	}
 
-	// Generate ASCII art
 	asciiArt, err := asciiart.Generate(text, banner)
 	if err != nil {
-		if strings.Contains(err.Error(), "banner file not found") {
+		fmt.Printf("Error generating ASCII art: %v\n", err)
+		if strings.Contains(err.Error(), "banner file not found") || 
+		   strings.Contains(err.Error(), "cannot read banner file") {
 			errorHandler(w, r, http.StatusNotFound)
+		} else if strings.Contains(err.Error(), "invalid banner") {
+			errorHandler(w, r, http.StatusBadRequest)
 		} else {
 			errorHandler(w, r, http.StatusInternalServerError)
 		}
 		return
 	}
 
-	// Parse template
 	tmpl, err := template.ParseFiles("templates/result.html")
 	if err != nil {
 		errorHandler(w, r, http.StatusInternalServerError)
 		return
 	}
 
-	// Prepare data for template
 	data := struct {
 		Input    string
 		Banner   string
@@ -97,7 +125,6 @@ func AsciiArtHandler(w http.ResponseWriter, r *http.Request) {
 		AsciiArt: asciiArt,
 	}
 
-	// Execute template
 	err = tmpl.Execute(w, data)
 	if err != nil {
 		errorHandler(w, r, http.StatusInternalServerError)
@@ -109,7 +136,6 @@ func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
 
 	tmpl, err := template.ParseFiles("templates/error.html")
 	if err != nil {
-		// If error template doesn't exist, send basic error message
 		switch status {
 		case http.StatusNotFound:
 			http.Error(w, "404 Page Not Found", http.StatusNotFound)
