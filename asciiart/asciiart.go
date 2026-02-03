@@ -1,11 +1,12 @@
 package asciiart
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strings"
+	"log"
 )
+
 
 func Generate(text, banner string) (string, error) {
 	// Validate banner
@@ -19,48 +20,72 @@ func Generate(text, banner string) (string, error) {
 		return "", fmt.Errorf("invalid banner: %s", banner)
 	}
 
-	// Load banner file
+	if text == "\n" {
+		return text, nil
+	}
+	text = strings.ReplaceAll(text, "\r\n", "\n")
+	// text = strings.ReplaceAll(text, "\\r", "")
+
+	words := strings.Split(text, "\\n")
+
 	fileName := fmt.Sprintf("banner/%s.txt", banner)
-	file, err := os.Open(fileName)
+
+	banners := LoadBanner(fileName)
+
+	output := PrintAscii(banners, words)
+
+	return output, nil
+}
+
+	// Load banner file
+func LoadBanner(filename string) map[rune][]string {
+	data, err := os.ReadFile(filename)
 	if err != nil {
-		return "", fmt.Errorf("banner file not found: %s", fileName)
-	}
-	defer file.Close()
-
-	// Read banner characters
-	scanner := bufio.NewScanner(file)
-	bannerChars := make([]string, 0)
-	for scanner.Scan() {
-		bannerChars = append(bannerChars, scanner.Text())
+		log.Fatal(err)
 	}
 
-	// Process text
-	lines := strings.Split(text, "\n")
+	info, err := os.Stat(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if info.Size() < 10 {
+		return nil
+	}
+
+
+	lines := strings.Split(string(data), "\n")
+
+	bannerMap := make(map[rune][]string)
+
+	for ch := 32 ; ch <= 126; ch++ {
+		start := int(ch -32) * 9
+		bannerMap[rune(ch)] = lines[start + 1 : start + 9 ]
+	}
+
+	return bannerMap
+
+}
+
+
+func PrintAscii(banner map[rune][]string, words []string) string {
 	result := ""
-
-	for _, line := range lines {
-		if line == "" {
+	
+	for _, word := range words {
+		if word == ""  || word == " " || word == "\n" {
 			result += "\n"
 			continue
 		}
 
-		// Generate each of the 8 lines
-		for i := 0; i < 8; i++ {
-			for _, char := range line {
-				// Calculate position in banner file
-				// ASCII characters start from 32 (space)
-				if char < 32 || char > 126 {
-					return "", fmt.Errorf("invalid character: %c", char)
-				}
-				
-				pos := int(char-32)*9 + i
-				if pos < len(bannerChars) {
-					result += bannerChars[pos]
-				}
+		word = strings.TrimSpace(word)
+	
+		for i := 0; i <= 7; i++ {
+			for j := 0; j<len(word);j++ {
+				char := word[j]
+				result += banner[rune(char)][i]
 			}
 			result += "\n"
 		}
 	}
-
-	return result, nil
+	return result
 }
