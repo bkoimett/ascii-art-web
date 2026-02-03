@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"test/asciiart"
-	// "fmt"
 	"html/template"
 	"net/http"
 	"strings"
